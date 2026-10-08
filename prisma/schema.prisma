@@ -1,0 +1,58 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+  runtime      = "nodejs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  nome           String    @db.VarChar(120)
+  email          String    @unique(map: "email") @db.VarChar(150)
+  senha          String    @db.VarChar(120)
+  dataNascimento DateTime? @db.Date
+  rg             String?   @db.VarChar(20)
+  cpf            String?   @unique(map: "cpf") @db.VarChar(20)
+  createdAt      DateTime   @default(now()) @db.DateTime(0)
+  updatedAt      DateTime   @updatedAt @db.DateTime(0)
+  nomeMae        String?    @default("Não informado") @map("NomeMae") @db.VarChar(255)
+  role           String?    @default("user") @db.VarChar(50)
+  contatos       Contact[]
+  enderecos      Address[]
+
+  @@map("usuarios")
+}
+
+model Address {
+  id          Int      @id @default(autoincrement())
+  idUsuario   Int
+  cep         String   @db.VarChar(20)
+  rua         String   @db.VarChar(150)
+  numero      String   @db.VarChar(20)
+  complemento String?  @db.VarChar(100)
+  bairro      String   @db.VarChar(100)
+  cidade      String   @db.VarChar(100)
+  estado      String   @db.VarChar(2)
+  createdAt   DateTime @db.DateTime(0)
+  updatedAt   DateTime @updatedAt @db.DateTime(0)
+  usuario     User     @relation(fields: [idUsuario], references: [id], onDelete: Cascade, map: "enderecos_ibfk_1")
+
+  @@index([idUsuario], map: "idUsuario")
+  @@map("enderecos")
+}
+
+model Contact {
+  id             Int      @id @default(autoincrement())
+  idUsuario      Int
+  numeroTelefone String   @db.VarChar(30)
+  createdAt      DateTime @db.DateTime(0)
+  updatedAt      DateTime @updatedAt @db.DateTime(0)
+  usuario        User     @relation(fields: [idUsuario], references: [id], onDelete: Cascade, map: "contatos_ibfk_1")
+
+  @@index([idUsuario], map: "idUsuario")
+  @@map("contatos")
+}
